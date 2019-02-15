@@ -11,12 +11,12 @@ abstract class GraphqlBuilder {
   String toString() {
     final StringBuffer buffer = StringBuffer();
     writeTo(buffer);
-    return buffer.toString();
+    return "query $_opname {${buffer.toString()}}";
   }
 }
 
 class SelectionSet {
-  List<Node> nodes = <Node>[];
+  List<Field> nodes = <Field>[];
   SelectionSet({this.nodes});
   @override
   String toString() {
@@ -24,20 +24,20 @@ class SelectionSet {
   }
 
 }
-class Node {
+class Field {
   String name;
   List<Argument> arguments = <Argument>[];
   SelectionSet selectionSet;
-  Node({this.name,this.arguments,this.selectionSet});
+  Field({this.name,this.arguments,this.selectionSet});
 
   @override
   String toString() {
-    return "$name${arguments?.expand((e)=>[e?.toString() ?? ""])} ${selectionSet ?? ""}";
+    return " ${name}${arguments?.expand((e)=>[e?.toString() ?? ""]) ?? ""}${selectionSet ?? ""}";
   }
 
 }
 
-class Argument extends Node {
+class Argument extends Field {
   String argname;
   dynamic argvalue;
   
@@ -51,16 +51,18 @@ class Argument extends Node {
 }
 
 class GraphqlSelectionSet extends GraphqlBuilder{
-  String _optype;
-  GraphqlSelectionSet(String optype) {
-    _optype =optype;
-  }
   
+  List<Field> tree = <Field>[];
+
   @override
   void writeTo(final StringSink sink) {
-    sink.write("query $_opname {");
-    sink.writeAll([Node(name: "authors", selectionSet: SelectionSet(nodes : [Node(name: "username",arguments: [Argument(argname: "name",argvalue: "test")])]), arguments: [Argument(argname: "id",argvalue: "1"),Argument(argname: "name",argvalue: "sacha")])]);
-    sink.write(" }");
+    //sink.write("query $_opname {");
+    sink.writeAll(tree);
+  }
+
+  GraphqlSelectionSet field(Field node){
+    tree.add(node);
+    return GraphqlSelectionSet();
   }
 
 }
@@ -68,7 +70,7 @@ class GraphqlSelectionSet extends GraphqlBuilder{
 abstract class Gql {
 
   static GraphqlSelectionSet query() {
-    return GraphqlSelectionSet("query");
+    return GraphqlSelectionSet();
   }
 
 }

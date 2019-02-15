@@ -4,6 +4,8 @@ main() {
   print(Gql
   .query()
   ..name("PostsForAuthor")
-  //..field(name:)
+  ..field(Field(name: "authors"))
+  ..field(Field(name : "users", arguments: [Argument(argname: "id",argvalue:"1")]))
+  ..field(Field(name:"posts",selectionSet: SelectionSet(nodes : [Field(name : "likes")])))
   .toString());
 }
